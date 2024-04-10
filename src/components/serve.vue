@@ -3,7 +3,7 @@ import { ref, onMounted } from "vue";
 import { getTime } from "../utils/index";
 import { ElMessage } from "element-plus";
 const props = defineProps(["userList", "messageList"]);
-const emit = defineEmits(["addMessageList", "cleanMessageList"]);
+const emit = defineEmits(["cleanMessageList"]);
 
 const input = ref("9969");
 const sendInput = ref("");
@@ -22,19 +22,16 @@ const handKey = (v) => {
 };
 
 const sendMessage = (flag) => {
+  if (!flag) key.value = "";
   const message = {
-    key: flag ? key.value : "",
+    key: key.value,
     message: sendInput.value,
   };
   if (flag && !key.value) {
     ElMessage.error("请选择用户");
     return;
   }
-  emit("addMessageList", {
-    type: 0,
-    time: getTime(),
-    message: sendInput.value,
-  });
+
   window.versions.sendMessage(message);
 };
 

@@ -7,10 +7,10 @@ import {
   emit,
   userList,
 } from "./utils/webSocket.js";
+import { getTime } from "./src/utils/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 const createWindow = () => {
   const win = new BrowserWindow({
     width: 800,
@@ -38,7 +38,8 @@ app.whenReady().then(() => {
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
-
+  createWindow();
+  const window = BrowserWindow.getFocusedWindow();
   ipcMain.on("server-ws", (_event, value) => {
     if (value) {
       console.log("initWebsocket");
@@ -51,14 +52,21 @@ app.whenReady().then(() => {
 
   ipcMain.on("send-message", (_event, value) => {
     const { key, message } = value;
+    const sendObj = {
+      type: 0,
+      time: getTime(),
+      message,
+    };
     const user = userList.get(key);
     if (user) {
       user.connection.send(message);
+      serverSendCallBack(sendObj, window);
     }
     if (!key && !user) {
       userList.forEach((value, key) => {
         value.connection.send(message);
       });
+      serverSendCallBack(sendObj, window);
     }
   });
 
@@ -66,9 +74,6 @@ app.whenReady().then(() => {
     // 获取当前窗口
     BrowserWindow.getFocusedWindow().webContents.openDevTools();
   });
-
-  createWindow();
-  const window = BrowserWindow.getFocusedWindow();
 
   emit.on("message", (v) => {
     sendView(v, window);
@@ -83,6 +88,14 @@ app.whenReady().then(() => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+const serverSendCallBack = (request, window) => {
+  if (window) {
+    window.webContents.send("ws-message", {
+      serverSendCallBack: JSON.stringify(request),
+    });
+  }
+};
 
 const sendView = (request, window) => {
   if (window) {

@@ -8,7 +8,7 @@ const messageList = ref([]);
 
 try {
   window.versions.receive("ws-message", (data) => {
-    const { message, addServerList } = data;
+    const { message, addServerList, serverSendCallBack } = data;
     if (message) {
       const messageObj = {
         type: 1,
@@ -19,6 +19,9 @@ try {
     }
     if (addServerList) {
       userList.value = JSON.parse(addServerList);
+    }
+    if (serverSendCallBack) {
+      addMessageList(JSON.parse(serverSendCallBack));
     }
   });
 } catch (err) {}
@@ -48,7 +51,6 @@ const cleanMessageList = (v) => {
         <Serve
           :messageList="messageList"
           :userList="userList"
-          @addMessageList="addMessageList"
           @cleanMessageList="cleanMessageList"
         />
       </el-tab-pane>
