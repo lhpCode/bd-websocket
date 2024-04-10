@@ -1,31 +1,79 @@
 <script setup>
 import { ref } from "vue";
-const data = ref(window.versions.chrome());
+import Serve from "@/components/serve.vue";
+import { getTime } from "./utils/index";
+
+const userList = ref([]);
+const messageList = ref([]);
+
+try {
+  window.versions.receive("ws-message", (data) => {
+    const { message, addServerList } = data;
+    if (message) {
+      const messageObj = {
+        type: 1,
+        time: getTime(),
+        message,
+      };
+      addMessageList(messageObj);
+    }
+    if (addServerList) {
+      userList.value = JSON.parse(addServerList);
+    }
+  });
+} catch (err) {}
+
+const activeName = ref("serve");
+
+const handleClick = (tab, event) => {
+  console.log(tab, event);
+};
+const addMessageList = (v) => {
+  messageList.value.push(v);
+};
+const cleanMessageList = (v) => {
+  messageList.value = [];
+};
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="ws">
+    <el-tabs
+      v-model="activeName"
+      type="card"
+      class="demo-tabs"
+      @tab-click="handleClick"
+    >
+      <el-tab-pane label="服务端" name="serve">
+        <Serve
+          :messageList="messageList"
+          :userList="userList"
+          @addMessageList="addMessageList"
+          @cleanMessageList="cleanMessageList"
+        />
+      </el-tab-pane>
+      <el-tab-pane label="用户端" name="user">用户端</el-tab-pane>
+      <el-tab-pane label="关于" name="about">关于</el-tab-pane>
+    </el-tabs>
   </div>
-  <div>浏览器版本:{{ data }}</div>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.ws {
+  padding: 10px;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.el-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+:deep(.el-tabs__content) {
+  flex: 1;
+}
+.el-tab-pane {
+  height: 100%;
 }
 </style>

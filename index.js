@@ -1,6 +1,13 @@
 import { app, BrowserWindow, globalShortcut, ipcMain } from "electron";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import {
+  initWebsocket,
+  closeWebsocket,
+  emit,
+  userList,
+} from "./utils/webSocket.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -26,20 +33,33 @@ const createWindow = () => {
 };
 
 // app.whenReady() ready 事件的专用监听
-
-let message = "pong-";
-
 app.whenReady().then(() => {
-  ipcMain.handle("ping", () => message);
   // 如果没有窗口打开则打开一个窗口(macOS)
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.on("counter-value", (_event, value) => {
-    message = value;
-    console.log("获取", value);
-    ipcMain.handle("ping", () => message);
+  ipcMain.on("server-ws", (_event, value) => {
+    if (value) {
+      console.log("initWebsocket");
+      initWebsocket(value);
+    } else {
+      console.log("closeWebsocket");
+      closeWebsocket();
+    }
+  });
+
+  ipcMain.on("send-message", (_event, value) => {
+    const { key, message } = value;
+    const user = userList.get(key);
+    if (user) {
+      user.connection.send(message);
+    }
+    if (!key && !user) {
+      userList.forEach((value, key) => {
+        value.connection.send(message);
+      });
+    }
   });
 
   globalShortcut.register("CommandOrControl+k", () => {
@@ -48,12 +68,34 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+  const window = BrowserWindow.getFocusedWindow();
+
+  emit.on("message", (v) => {
+    sendView(v, window);
+  });
+
+  emit.on("addServerList", (v) => {
+    addServerList(v, window);
+  });
 });
-// app.on("ready",()=>{
-//     createWindow()
-// })
 
 // 关闭所有窗口时退出应用
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
+
+const sendView = (request, window) => {
+  if (window) {
+    window.webContents.send("ws-message", {
+      message: JSON.stringify(request),
+    });
+  }
+};
+
+const addServerList = (request, window) => {
+  if (window) {
+    window.webContents.send("ws-message", {
+      addServerList: JSON.stringify(request),
+    });
+  }
+};
