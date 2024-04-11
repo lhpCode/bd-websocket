@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import Serve from "@/components/serve.vue";
+import User from "@/components/user.vue";
 import { getTime } from "./utils/index";
 
 const userList = ref([]);
@@ -10,10 +11,14 @@ try {
   window.versions.receive("ws-message", (data) => {
     const { message, addServerList, serverSendCallBack } = data;
     if (message) {
+      const JSONmessage = JSON.parse(message);
+      const host = JSONmessage.host;
+      delete JSONmessage.host;
       const messageObj = {
         type: 1,
         time: getTime(),
-        message,
+        message: JSONmessage,
+        host: host,
       };
       addMessageList(messageObj);
     }
@@ -54,7 +59,9 @@ const cleanMessageList = (v) => {
           @cleanMessageList="cleanMessageList"
         />
       </el-tab-pane>
-      <el-tab-pane label="用户端" name="user">用户端</el-tab-pane>
+      <el-tab-pane label="用户端" name="user">
+        <User />
+      </el-tab-pane>
       <el-tab-pane label="关于" name="about">关于</el-tab-pane>
     </el-tabs>
   </div>
@@ -74,6 +81,11 @@ const cleanMessageList = (v) => {
 }
 :deep(.el-tabs__content) {
   flex: 1;
+  overflow-y: auto;
+}
+:deep(.el-tabs__header) {
+  padding: 0;
+  margin: 0;
 }
 .el-tab-pane {
   height: 100%;

@@ -1,47 +1,19 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { toRaw } from "@vue/reactivity";
+import { Ws } from "@/utils/ws.js";
 import { ElMessage } from "element-plus";
-const props = defineProps(["userList", "messageList"]);
-const emit = defineEmits(["cleanMessageList"]);
+import { getCurrentInstance } from "vue";
 
-const input = ref("9969");
-const sendInput = ref("");
-const disabled = ref(false);
+const instance = getCurrentInstance();
 const key = ref("");
-const start = () => {
-  disabled.value = true;
-  window.versions.serverWs(input.value);
+const updateView = (id) => {
+  if (id !== key.value) return;
+  instance.proxy.$forceUpdate();
 };
-const stop = () => {
-  disabled.value = false;
-  window.versions.serverWs("");
-};
-const handKey = (v) => {
-  key.value = v;
-};
-
-const sendMessage = (flag) => {
-  if (!flag) key.value = "";
-  const user = props.userList.find((item) => item.key === key.value);
-  const message = {
-    key: key.value,
-    message: sendInput.value,
-    host: user ? user.host : "全部",
-  };
-  if (flag && !key.value) {
-    ElMessage.error("请选择用户");
-    return;
-  }
-
-  window.versions.sendMessage(message);
-};
-
-const closeMessage = () => {
-  emit("cleanMessageList");
-};
-
+const input = ref("ws://127.0.0.1:9969");
 const height = ref(0);
-
+const disabled = ref(false);
 const getHeight = () => {
   const node = document.querySelector("#receive");
   height.value = node.clientHeight;
@@ -49,41 +21,80 @@ const getHeight = () => {
 onMounted(() => {
   window.addEventListener("resize", getHeight);
 });
+const userList = ref([]);
+const userListMap = new Map();
+let wsNow;
+const message = ref([]);
+
+const start = () => {
+  const ws = new Ws(input.value, updateView);
+  wsNow = ws;
+  userListMap.set(ws.id, ws);
+  userList.value.push({
+    id: ws.id,
+    url: ws.url,
+  });
+  key.value = ws.id;
+  message.value = ws.message;
+};
+const deleteWs = (id) => {
+  const ws = userListMap.get(id);
+  if (!ws) return;
+  ws.close();
+  userListMap.delete(id);
+  userList.value = userList.value.filter((item) => item.id !== id);
+  key.value = "";
+};
+const sendInput = ref("");
+const sendMessage = () => {
+  if (!key.value) {
+    ElMessage.error("请选择用户");
+    return;
+  }
+  const ws = userListMap.get(key.value);
+  if (!ws) return;
+  ws.send(sendInput.value);
+};
+const closeMessage = () => {
+  if (!wsNow) return;
+  wsNow.closeMessage();
+  message.value = wsNow.message;
+};
+
+const clickUser = (id) => {
+  const ws = userListMap.get(id);
+  key.value = id;
+  if (!ws) return;
+  wsNow = ws;
+  message.value = ws.message;
+};
 </script>
 <template>
   <div class="server">
     <div class="server-head">
-      <span
-        :style="{
-          marginRight: '10px',
-        }"
-        >服务器地址：ws://127.0.0.1:{{ input }}</span
-      ><el-input
-        type="number"
+      <el-input
         :disabled="disabled"
         v-model="input"
         style="width: 240px"
-        placeholder="请输入地址"
+        placeholder="请输入地址:ws://xxx.xxx.xxx:xxx"
       />
       <el-button :disabled="disabled" type="success" @click="start">
-        创建服务
-      </el-button>
-      <el-button :disabled="!disabled" type="danger" @click="stop">
-        停止服务
+        添加连接
       </el-button>
     </div>
     <div class="content">
       <div class="user-list card">
-        <div>连接列表</div>
+        <div>用户列表</div>
         <ul class="infinite-list" style="overflow: auto">
           <li
-            @click="handKey(i.key)"
+            @click="clickUser(i.id)"
             v-for="i in userList"
-            :key="i.key"
+            :key="i.id"
             class="infinite-list-item"
-            :class="{ 'change-key': i.key === key }"
+            :class="{ 'change-key': i.id === key }"
           >
-            {{ i.host }}
+            {{ i.url }}
+            <div class="close" @click="deleteWs(i.id)">x</div>
           </li>
         </ul>
       </div>
@@ -91,8 +102,7 @@ onMounted(() => {
         <div class="send card message-content">
           <div>
             <span>发送区：</span>
-            <el-button @click="sendMessage(true)"> 发送 </el-button>
-            <el-button @click="sendMessage(false)"> 发送给全部 </el-button>
+            <el-button @click="sendMessage"> 发送 </el-button>
           </div>
           <div class="message-content">
             <el-input
@@ -105,7 +115,7 @@ onMounted(() => {
           </div>
         </div>
         <div
-          id="receive"
+          id="userReceive"
           class="receive card"
           :style="{
             marginTop: '10px',
@@ -124,8 +134,8 @@ onMounted(() => {
             <ul class="message">
               <li
                 class="message-item"
-                v-for="(item, i) in messageList"
-                :key="i"
+                v-for="(item, i) in message"
+                :key="item.time"
               >
                 <div>
                   <el-tag :type="item.type ? 'primary' : 'success'">{{
@@ -134,10 +144,7 @@ onMounted(() => {
                   {{ item.time }}
                 </div>
                 <div>
-                  <el-link type="primary">
-                    {{ item.host ? item.host : item.message?.host }}</el-link
-                  >
-                  :{{ item.message }}
+                  {{ item.message }}
                 </div>
               </li>
             </ul>

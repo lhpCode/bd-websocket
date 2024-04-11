@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, globalShortcut, ipcMain } from "electron";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import {
@@ -13,28 +13,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1100,
+    height: 900,
     webPreferences: {
-      // preload: join(__dirname, "preload.js"),
       // 启用上下文隔离，这是推荐的安全实践
       contextIsolation: true,
       // 禁用远程模块，也是出于安全考虑
       enableRemoteModule: false,
-      // 加载 ESM 格式的 preload 脚本
+      // 加载 preload 脚本
       preload: join(__dirname, "preload.cjs"),
       // 允许在 preload 脚本中使用 nodeIntegration
       nodeIntegration: false,
       // 允许在 preload 脚本中访问 contextBridge API
-      contextIsolation: true, // 注意：这取决于您是否需要 contextIsolation
+      contextIsolation: true,
     },
   });
+  const menuTemplate = [];
+  const menu = Menu.buildFromTemplate(menuTemplate);
+  Menu.setApplicationMenu(menu);
   win.loadFile("./dist/index.html");
 };
 
 // app.whenReady() ready 事件的专用监听
 app.whenReady().then(() => {
-  // 如果没有窗口打开则打开一个窗口(macOS)
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -42,20 +43,19 @@ app.whenReady().then(() => {
   const window = BrowserWindow.getFocusedWindow();
   ipcMain.on("server-ws", (_event, value) => {
     if (value) {
-      console.log("initWebsocket");
       initWebsocket(value);
     } else {
-      console.log("closeWebsocket");
       closeWebsocket();
     }
   });
 
   ipcMain.on("send-message", (_event, value) => {
-    const { key, message } = value;
+    const { key, message, host } = value;
     const sendObj = {
       type: 0,
       time: getTime(),
       message,
+      host,
     };
     const user = userList.get(key);
     if (user) {

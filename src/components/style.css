@@ -1,0 +1,112 @@
+.server {
+  padding-top: 10px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.card {
+  padding: 5px;
+  box-shadow: 0px 0px 5px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.server .server-head {
+  display: flex;
+  align-items: center;
+}
+.server .server-head span {
+  width: 300px;
+  color: #606266;
+}
+.server .server-head .el-input {
+  margin-right: 10px;
+}
+.server .content {
+  padding: 10px;
+  margin-top: 10px;
+  flex: 1;
+  display: flex;
+}
+.server .content .user-list {
+  text-align: center;
+}
+.server .content .user-list .infinite-list {
+  min-width: 200px;
+  height: 80vh;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  text-align: center;
+}
+.server .content .user-list .infinite-list .infinite-list-item {
+  position: relative;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  background: var(--el-color-primary-light-9);
+  margin: 10px;
+  color: var(--el-color-primary);
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+.server .content .user-list .infinite-list .infinite-list-item:hover .close{
+  display: block;
+}
+.server .content .user-list .infinite-list .infinite-list-item .close{
+  display: none;
+  position: absolute;
+  top: 0;
+  right:0;
+  transform: translate(50%,-50%);
+  width: 15px;
+  height: 15px;
+  background-color: rgba(0, 0, 0, 0.8);
+  text-align: center;
+  line-height: 12px;
+  color: #fff;
+  border-radius: 50%;
+  cursor: default;
+
+}
+.server .content .user-list .infinite-list .change-key {
+  background-color: #67c23a;
+  color: #fff;
+}
+.content .message {
+  margin-left: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.content .message .send,
+.content .message .receive {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.content .message .message-content {
+  flex: 1;
+  /* height: 100px; */
+}
+.content .message .el-textarea {
+  width: 100% !important;
+  height: 100%;
+}
+:deep(.el-textarea__inner) {
+  height: 100%;
+}
+.content .message .receive .message-box {
+  /* min-height: 200px; */
+  /* flex: 1; */
+  height: 65vh;
+  overflow-y: auto;
+}
+.content .message .receive .message-box .message .message-item {
+  margin: 5px 0;
+  word-break: break-all;
+  word-wrap: break-word;
+}

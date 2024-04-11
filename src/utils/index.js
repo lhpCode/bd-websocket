@@ -13,3 +13,19 @@ export const getTime = () => {
   s = s < 10 ? "0" + s : s;
   return `${Y}-${M}-${D} ${h}:${m}:${s}`;
 };
+
+// 返回26位随机id
+export const generateRandomId = () => {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  const date = String(Date.now());
+
+  for (var i = 0; i < 16; i++) {
+    result +=
+      characters.charAt(Math.floor(Math.random() * charactersLength)) +
+      characters.charAt(Number(date.charAt(i)));
+  }
+  return result;
+};

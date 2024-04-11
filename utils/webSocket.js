@@ -18,10 +18,6 @@ const initWebsocket = (path = 8080) => {
   });
 
   websocketServer.on("request", function (request) {
-    // 这就是一次客户端发送的消息
-    // websocket 需要将这个链接保存起来
-    // 只要客户端和服务器没有断开，这个链接必须在
-    // 客户端与服务端的通信都是从这个链接上通信
     const { host, key, resourceURL, resource } = request;
     const connection = request.accept();
     userList.set(key, {
@@ -32,7 +28,10 @@ const initWebsocket = (path = 8080) => {
     sendViewUser();
     // 监听客户端发送的消息
     connection.on("message", function (message) {
-      emit.emit("message", message);
+      emit.emit("message", {
+        ...message,
+        host: host + resource,
+      });
       // 发送消息给客户端（广播到各个客户端）
     });
     // 断开
