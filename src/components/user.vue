@@ -92,7 +92,7 @@ const clickUser = (id) => {
             v-for="i in userList"
             :key="i.id"
             class="infinite-list-item"
-            :class="{ 'change-key': i.id === key, error: !i.status }"
+            :class="{ 'change-key': i.id === key, 'error-user': !i.status }"
           >
             {{ i.url }}
             <div class="close" @click="deleteWs(i.id)">x</div>
@@ -157,7 +157,7 @@ const clickUser = (id) => {
 </template>
 <style scoped>
 @import url("./style.css");
-.error {
+.error-user {
   color: rgb(221, 41, 41) !important;
 }
 </style>

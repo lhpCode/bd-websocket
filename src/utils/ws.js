@@ -75,7 +75,7 @@ export class Ws {
       });
       this.updateView(this.id);
     } else {
-      ElMessage.error("未连接,正在尝试重新连接");
+      ElMessage.error("未连接");
     }
   }
   closeMessage() {

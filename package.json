@@ -1,7 +1,7 @@
 {
-  "name": "my-electron-study",
+  "name": "bd-websocket",
   "version": "1.0.0",
-  "description": "learn electron",
+  "description": "websocket",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -13,7 +13,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make"
   },
-  "author": "",
+  "author": "bd-lhp",
   "license": "ISC",
   "dependencies": {
     "cross-spawn": "^7.0.3",
