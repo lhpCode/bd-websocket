@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import Serve from "@/components/serve.vue";
 import User from "@/components/user.vue";
+import About from "@/components/about.vue";
 import { getTime } from "./utils/index";
 
 const userList = ref([]);
@@ -62,7 +63,9 @@ const cleanMessageList = (v) => {
       <el-tab-pane label="用户端" name="user">
         <User />
       </el-tab-pane>
-      <el-tab-pane label="关于" name="about">关于</el-tab-pane>
+      <el-tab-pane label="关于" name="about">
+        <About />
+      </el-tab-pane>
     </el-tabs>
   </div>
 </template>

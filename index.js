@@ -27,6 +27,7 @@ const createWindow = () => {
       // 允许在 preload 脚本中访问 contextBridge API
       contextIsolation: true,
     },
+    icon: __dirname + "/public/bd.jpg",
   });
   const menuTemplate = [];
   const menu = Menu.buildFromTemplate(menuTemplate);

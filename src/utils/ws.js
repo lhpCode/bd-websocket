@@ -1,7 +1,8 @@
 import { generateRandomId, getTime } from "@/utils/index.js";
-
+import { ElMessage } from "element-plus";
+import { ElNotification } from "element-plus";
 export class Ws {
-  constructor(url, update) {
+  constructor(url, update, userList) {
     if (!url) return;
     this.time = 5000;
     this.timeLink = 0;
@@ -13,6 +14,7 @@ export class Ws {
     this.message = [];
     this.init();
     this.updateView = update;
+    this.userList = userList;
   }
   init() {
     if ("WebSocket" in window) {
@@ -24,7 +26,12 @@ export class Ws {
     const vm = this;
     this.websocket.onopen = function (evnt) {
       vm.status = true;
-      console.log("连接已经建立", evnt);
+      vm.setStatus();
+      ElNotification({
+        title: "连接成功",
+        message: "连接已经建立：" + this.url,
+        type: "success",
+      });
     };
     this.websocket.onmessage = function (evnt) {
       const { data } = evnt;
@@ -37,23 +44,39 @@ export class Ws {
       console.log("接收", vm.message);
     };
     this.websocket.onerror = function (evnt) {
-      console.log("发生错误", evnt);
+      ElNotification({
+        title: "发生错误",
+        message: "连接断开，正在尝试重新建立连接：" + this.url,
+        type: "error",
+      });
       vm.start();
     };
     this.websocket.onclose = function (evnt, code) {
-      console.log("连接断开", evnt);
-      console.log("code", code);
+      console.log(evnt);
       vm.status = false;
+      vm.setStatus();
     };
   }
-  send(data) {
-    this.message.push({
-      type: 0,
-      time: getTime(),
-      message: data,
+  setStatus() {
+    this.userList.forEach((item) => {
+      if (item.id === this.id) {
+        item.status = this.status;
+      }
     });
-    this.websocket.send(data);
-    this.updateView(this.id);
+    this.updateView();
+  }
+  send(data) {
+    if (this.status) {
+      this.websocket.send(data);
+      this.message.push({
+        type: 0,
+        time: getTime(),
+        message: data,
+      });
+      this.updateView(this.id);
+    } else {
+      ElMessage.error("未连接,正在尝试重新连接");
+    }
   }
   closeMessage() {
     this.message = [];

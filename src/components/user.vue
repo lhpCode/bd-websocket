@@ -27,12 +27,13 @@ let wsNow;
 const message = ref([]);
 
 const start = () => {
-  const ws = new Ws(input.value, updateView);
+  const ws = new Ws(input.value, updateView, userList.value);
   wsNow = ws;
   userListMap.set(ws.id, ws);
   userList.value.push({
     id: ws.id,
     url: ws.url,
+    status: false,
   });
   key.value = ws.id;
   message.value = ws.message;
@@ -91,7 +92,7 @@ const clickUser = (id) => {
             v-for="i in userList"
             :key="i.id"
             class="infinite-list-item"
-            :class="{ 'change-key': i.id === key }"
+            :class="{ 'change-key': i.id === key, error: !i.status }"
           >
             {{ i.url }}
             <div class="close" @click="deleteWs(i.id)">x</div>
@@ -156,4 +157,7 @@ const clickUser = (id) => {
 </template>
 <style scoped>
 @import url("./style.css");
+.error {
+  color: rgb(221, 41, 41) !important;
+}
 </style>
