@@ -2,9 +2,7 @@
   <div class="feature">
     <h3>bd-websocket测试工具</h3>
     <p>发布地址：https://github.com/lhpCode/bd-websocket</p>
-    <p>
-      bd-websocket测试工具是一个websocket测试工具，支持服务端创建和客户端连接
-    </p>
+    <p>bd-websocket是一个websocket测试工具，支持服务端创建和客户端连接</p>
   </div>
   <div class="feature">
     <h3>发布说明：v1.0.0</h3>

@@ -1,7 +1,9 @@
-# Vue 3 + Vite
+#  bd-websocket
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+ bd-websocket使用electron+vue3创建。是一个websocket测试工具，支持服务端创建和客户端连接
 
-## Recommended IDE Setup
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (previously Volar) and disable Vetur
+
+1. 支持ws服务端和客户端
+2. 支持创建多个客户端
+3. 服务端定点发送和全局发送
